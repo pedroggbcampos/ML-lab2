@@ -1,42 +1,79 @@
-import numpy, random, math
-from scipy.optimize import minimize
+import math
+import random
+
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy.linalg as la
+import scipy as sp
+from scipy.optimize import minimize
 
 
+# global variables
+C = 1
+N = 5
+x = np.zeros(N)
+t = np.zeros(N)
+p = np.zeros((N, N))
+alphas = np.zeros(N)
+
+
+# equation 4
 def objective(alphas):
     global p
-    return (1/2)*(numpy.dot(alphas, numpy.dot(alphas, p))) - numpy.sum(alphas)
+    return (1/2)*(np.dot(alphas, np.dot(alphas, p))) - np.sum(alphas)
 
 
+# equality constraint of (10)
 def zerofun(alphas):
-    global t
-    return numpy.dot(alphas, t)
+    return np.dot(alphas, t)
 
 
-def linearkernel(p1, p2):
-    return numpy.dot(p1, p2)
+# linear kernel
+def linear_kernel(p1, p2):
+    return np.dot(p1.transpose(), p2)
+
+
+# polynomial kernel
+def polynomial_kernel(p1, p2):
+    p = 2
+    return (np.dot(p1.transpose(), p2) + 1) ** p
+
+
+# radial basis function kernel
+def rbf_kernel(p1, p2):
+    sigma = 1
+    return math.e ** (-1 * (la.norm(p1-p2)**2) / (2*sigma**2))
 
 
 def calculatematrixp():
-    global t
-    global x
-    p = numpy.zeros((N, N))
-    for i in range(0, t.length):
-        for j in range(0, t.length):
-            p[i][j] = t[i]*t[j]*linearkernel(x[i], x[j])
-    return p
+    global p
+    for i in range(0, t.size):
+        for j in range(0, t.size):
+            p[i][j] = t[i] * t[j] * linear_kernel(x[i], x[j])
 
 
-C = 1
-N = 5
+# equation 6
+def indicator(s):
+    result = 0
+    for i in range(N):
+        result += alphas[i]*t[i]*linear_kernel(s, x[i])
+    return (result - b)
 
-x = numpy.zeros(N)
-alphas = numpy.zeros(N)
-t = numpy.zeros(N)
-constraint = {'type': 'eq', 'fun': zerofun}
-bounds = [(0, C) for b in range(N)]
 
-p = calculatematrixp()
+def main():
 
-ret = minimize(objective, alphas, bounds, constraint)
-alpha = ret['x']
+    # alphas = np.zeros(N)
+    constraint = {'type': 'eq', 'fun': zerofun}
+    bounds = [(0, C) for b in range(N)]
+
+    calculatematrixp()
+
+    ret = minimize(objective, alphas, bounds, constraint)
+    alpha = ret['x']
+    if (ret['success']):
+        print("Success!")
+
+
+if __name__ == "__main__":
+    main()
