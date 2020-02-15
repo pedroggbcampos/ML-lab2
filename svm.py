@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as la
 import scipy as sp
+
+from numpy.random import randn
 from scipy.optimize import minimize
+
 
 # type of kernel to be used
 #   1 - linear
@@ -16,8 +19,15 @@ kernel_type = 1
 
 
 # global variables
+classA = []
+classB = []
+inputs = []
+targets = []
+permute = []
+
+
 C = 1
-N = 5
+N = 0
 x = np.zeros(N)
 t = np.zeros(N)
 p = np.zeros((N, N))
@@ -53,7 +63,7 @@ def bias():
         s = alphas[index]
         t_s = t[index]
     b = np.dot(alphas, np.dot(t, [kernel(s, x[i])
-                                 for i in range(x.size)])) - t_s
+                                  for i in range(x.size)])) - t_s
 
 
 # equality constraint of (10)
@@ -97,11 +107,56 @@ def calculatematrixp():
             p[i][j] = t[i] * t[j] * kernel(x[i], x[j])
 
 
+# generate the test data
+def generate_data():
+    global classA
+    global classB
+    global inputs
+    global targets
+    global permute
+    global N
+
+    # numpy.random.seed(100)”
+    classA = np.concatenate(
+        (randn(10, 2) * 0.2 + [1.5, 0.5],
+         randn(10, 2) * 0.2 + [-1.5, 0.5]))
+    classB = randn(20, 2) * 0.2 + [0.0, -0.5]
+
+    inputs = np.concatenate((classA, classB))
+    targets = np.concatenate(
+        (np.ones(classA.shape[0]),
+         -np.ones(classB.shape[0])))
+
+    N = inputs.shape[0]
+
+    permute = list(range(N))
+    random.shuffle(permute)
+    inputs = inputs[permute, :]
+    targets = targets[permute]
+
+# plot the data
+
+
+def plot_data():
+    plt.plot([p[0] for p in classA],
+             [p[1] for p in classA],
+             'b.')
+
+    plt.plot([p[0] for p in classB],
+             [p[1] for p in classB],
+             'r.')
+
+    plt.axis('equal')
+    plt.savefig('svmplot.pdf')
+    plt.show()
+
+
 def main():
 
     constraint = {'type': 'eq', 'fun': zerofun}
     bounds = [(0, C) for b in range(N)]
 
+    generate_data()
     calculatematrixp()
     bias()
 
