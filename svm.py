@@ -50,7 +50,7 @@ def objective(alphas):
 
 
 # equation 6: indicator function
-def ind(s):
+def indicator(s):
     return np.dot(alphas, np.dot(t, [kernel(s, x[i]) for i in range(x.size)])) - b
 
 
@@ -116,7 +116,7 @@ def generate_data():
     global permute
     global N
 
-    # numpy.random.seed(100)”
+    # numpy.random.seed(100)
     classA = np.concatenate(
         (randn(10, 2) * 0.2 + [1.5, 0.5],
          randn(10, 2) * 0.2 + [-1.5, 0.5]))
@@ -127,16 +127,15 @@ def generate_data():
         (np.ones(classA.shape[0]),
          -np.ones(classB.shape[0])))
 
-    N = inputs.shape[0]
+    N = inputs.shape[0]  # number of rows (samples)
 
     permute = list(range(N))
     random.shuffle(permute)
     inputs = inputs[permute, :]
     targets = targets[permute]
 
+
 # plot the data
-
-
 def plot_data():
     plt.plot([p[0] for p in classA],
              [p[1] for p in classA],
@@ -146,9 +145,24 @@ def plot_data():
              [p[1] for p in classB],
              'r.')
 
-    plt.axis('equal')
-    plt.savefig('svmplot.pdf')
-    plt.show()
+    plt.axis('equal')  # force same scale on both axes
+    plt.savefig('svmplot.pdf')  # save a copy in a file
+    plt.show()  # show the plot on the screen
+
+
+# plot the decsion boundary
+def plot_decision_boundary():
+    xgrid = np.linspace(-5, 5)
+    ygrid = np.linspace(-4, 4)
+
+    grid = np.array([[indicator(x, y)
+                      for x in xgrid]
+                     for y in ygrid])
+
+    plt.contour(xgrid, ygrid, grid,
+                (-1.0, 0.0, 1.0),
+                colors=('red', 'black', 'blue'),
+                linewidths=(1, 3, 1))
 
 
 def main():
@@ -164,6 +178,9 @@ def main():
     alpha = ret['x']
     if (ret['success']):
         print("Success!")
+
+    plot_data()
+    plot_decision_boundary()
 
 
 if __name__ == "__main__":
