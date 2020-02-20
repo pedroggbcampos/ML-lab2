@@ -15,7 +15,7 @@ from scipy.optimize import minimize
 #   1 - linear
 #   2 - polynomial
 #   3 - rbf
-kernel_type = 3
+kernel_type = 1
 
 
 # global variables
@@ -34,6 +34,7 @@ alphas = []
 nonzero_x = []
 nonzero_t = []
 nonzero_p = []
+nonzero_alphas = []
 
 # bias, along with s and t_s used to calculate it
 b = 0
@@ -49,7 +50,7 @@ def objective(alphas):
 
 # equation 6: indicator function
 def indicator(s):
-    return np.dot(np.multiply(alphas, targets), [kernel(s, inputs[i]) for i in range(len(inputs))]) - b
+    return np.dot(np.multiply(nonzero_alphas, nonzero_t), [kernel(s, nonzero_x[i]) for i in range(len(nonzero_x))]) - b
 
 
 # equation 7: threshold function to calculate bias
@@ -60,11 +61,11 @@ def bias():
     global alphas
     global inputs
     while s == 0:
-        index = random.randint(0, len(alphas) - 1)
-        s = alphas[index]
-        t_s = targets[index]
-    s = inputs[index]          '''changed'''
-    b = np.dot(np.multiply(alphas, targets), [kernel(s, inputs[i]) for i in range(len(inputs))]) - t_s
+        index = random.randint(0, len(nonzero_alphas) - 1)
+        s = nonzero_alphas[index]
+        t_s = nonzero_t[index]
+    s = nonzero_x[index]
+    b = np.dot(np.multiply(nonzero_alphas, nonzero_t), [kernel(s, nonzero_x[i]) for i in range(len(nonzero_x))]) - t_s
 
 
 
@@ -184,6 +185,13 @@ def main():
     alphas = ret['x']
     if ret['success']:
         print("Success!")
+
+    for i in range (0, len(alphas)):
+        if 10**(-5) < alphas[i] < C:
+            nonzero_alphas.add(alphas[i])
+            nonzero_x.add(inputs[i])
+            nonzero_t.add(targets[i])
+
 
     bias()
     plot_data()
