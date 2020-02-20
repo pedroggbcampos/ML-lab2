@@ -15,7 +15,7 @@ from scipy.optimize import minimize
 #   1 - linear
 #   2 - polynomial
 #   3 - rbf
-kernel_type = 1
+kernel_type = 3
 
 
 # global variables
@@ -63,7 +63,9 @@ def bias():
         index = random.randint(0, len(alphas) - 1)
         s = alphas[index]
         t_s = targets[index]
+    s = inputs[index]          '''changed'''
     b = np.dot(np.multiply(alphas, targets), [kernel(s, inputs[i]) for i in range(len(inputs))]) - t_s
+
 
 
 # equality constraint of (10)
@@ -150,8 +152,7 @@ def plot_data():
 
     plt.axis('equal')  # force same scale on both axes
     plt.savefig('svmplot.pdf')  # save a copy in a file
-    plt.show()  # show the plot on the screen
-
+    '''plt.show()  # show the plot on the screen'''
 
 # plot the decsion boundary
 def plot_decision_boundary():
@@ -162,12 +163,11 @@ def plot_decision_boundary():
                       for x in xgrid]
                      for y in ygrid])
 
-    print(grid)
     plt.contour(xgrid, ygrid, grid,
                 (-1.0, 0.0, 1.0),
                 colors=('red', 'black', 'blue'),
                 linewidths=(1, 3, 1))
-
+    plt.show()
 
 def main():
 
@@ -182,7 +182,7 @@ def main():
 
     ret = minimize(objective, alphas, bounds=bds, constraints=cts)
     alphas = ret['x']
-    if (ret['success']):
+    if ret['success']:
         print("Success!")
 
     bias()
