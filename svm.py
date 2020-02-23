@@ -13,6 +13,9 @@ from scipy.optimize import minimize
 #   2 - polynomial
 #   3 - rbf
 kernel_type = 3
+p = 2
+sigma = 1
+variance = 0.7
 
 # global variables
 classA = []
@@ -21,8 +24,8 @@ inputs = []
 targets = []
 permute = []
 
-C = 1
-N = 0
+C = 10
+N = 100
 p = []
 alphas = []
 
@@ -91,13 +94,11 @@ def linear_kernel(p1, p2):
 
 # polynomial kernel
 def polynomial_kernel(p1, p2):
-    p = 2
     return (np.dot(p1, p2) + 1) ** p
 
 
 # radial basis function kernel
 def rbf_kernel(p1, p2):
-    sigma = 1
     return math.e ** (-1 * (la.norm(p1 - p2) ** 2) / (2 * sigma ** 2))
 
 
@@ -121,9 +122,9 @@ def generate_data():
 
     # numpy.random.seed(100)
     classA = np.concatenate(
-        (randn(10, 2) * 0.2 + [1.5, 0.5],
-         randn(10, 2) * 0.2 + [-1.5, 0.5]))
-    classB = randn(20, 2) * 0.2 + [0.0, -0.5]
+        (randn(int(N / 4), 2) * variance + [1.5, 0.5],
+         randn(int(N / 4), 2) * variance + [-1.5, 0.5]))
+    classB = randn(int(N / 2), 2) * variance + [0, -0.5]
 
     inputs = np.concatenate((classA, classB))
     targets = np.concatenate(
