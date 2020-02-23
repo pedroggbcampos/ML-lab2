@@ -1,22 +1,18 @@
 import math
 import random
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as la
-import scipy as sp
 
 from numpy.random import randn
 from scipy.optimize import minimize
-
 
 # type of kernel to be used
 #   1 - linear
 #   2 - polynomial
 #   3 - rbf
-kernel_type = 1
-
+kernel_type = 3
 
 # global variables
 classA = []
@@ -24,7 +20,6 @@ classB = []
 inputs = []
 targets = []
 permute = []
-
 
 C = 1
 N = 0
@@ -45,11 +40,12 @@ t_s = 0
 # equation 4: objective function
 def objective(alphas):
     global p
-    return (1/2)*(np.sum(np.dot(np.dot(alphas, p), alphas))) - np.sum(alphas)
+    return (1 / 2) * (np.sum(np.dot(np.dot(alphas, p), alphas))) - np.sum(alphas)
 
 
 # equation 6: indicator function
 def indicator(s):
+    global nonzero_alphas, nonzero_t, nonzero_x
     return np.dot(np.multiply(nonzero_alphas, nonzero_t), [kernel(s, nonzero_x[i]) for i in range(len(nonzero_x))]) - b
 
 
@@ -58,15 +54,15 @@ def bias():
     global b
     global s
     global t_s
-    global alphas
-    global inputs
+    global nonzero_alphas
+    global nonzero_x
+    global nonzero_t
     while s == 0:
         index = random.randint(0, len(nonzero_alphas) - 1)
         s = nonzero_alphas[index]
         t_s = nonzero_t[index]
     s = nonzero_x[index]
     b = np.dot(np.multiply(nonzero_alphas, nonzero_t), [kernel(s, nonzero_x[i]) for i in range(len(nonzero_x))]) - t_s
-
 
 
 # equality constraint of (10)
@@ -89,6 +85,7 @@ def kernel(p1, p2):
 def linear_kernel(p1, p2):
     return np.dot(p1, p2)
 
+
 '''transposing a 1D array returns the array unchanged'''
 
 
@@ -101,10 +98,10 @@ def polynomial_kernel(p1, p2):
 # radial basis function kernel
 def rbf_kernel(p1, p2):
     sigma = 1
-    return math.e ** (-1 * (la.norm(p1-p2)**2) / (2*sigma**2))
+    return math.e ** (-1 * (la.norm(p1 - p2) ** 2) / (2 * sigma ** 2))
 
 
-# precompute p
+# pre compute p
 def calculatematrixp():
     global p
     p = np.zeros((len(targets), len(targets)))
@@ -155,6 +152,7 @@ def plot_data():
     plt.savefig('svmplot.pdf')  # save a copy in a file
     '''plt.show()  # show the plot on the screen'''
 
+
 # plot the decsion boundary
 def plot_decision_boundary():
     xgrid = np.linspace(-5, 5)
@@ -170,8 +168,8 @@ def plot_decision_boundary():
                 linewidths=(1, 3, 1))
     plt.show()
 
-def main():
 
+def main():
     global alphas, inputs, C
     cts = {'type': 'eq', 'fun': zerofun}
 
@@ -186,12 +184,11 @@ def main():
     if ret['success']:
         print("Success!")
 
-    for i in range (0, len(alphas)):
-        if 10**(-5) < alphas[i] < C:
-            nonzero_alphas.add(alphas[i])
-            nonzero_x.add(inputs[i])
-            nonzero_t.add(targets[i])
-
+    for i in range(0, len(alphas)):
+        if 10 ** (-5) < alphas[i] < C:
+            nonzero_alphas.append(alphas[i])
+            nonzero_x.append(inputs[i])
+            nonzero_t.append(targets[i])
 
     bias()
     plot_data()
